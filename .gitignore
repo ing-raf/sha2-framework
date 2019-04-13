@@ -1,0 +1,7 @@
+# macOS-related file system files
+.DS_Store
+
+# project temporary files & reports - but keep the sources
+sha2-framework.*
+!sha2-framework.srcs/
+
