@@ -1,3 +1,6 @@
+--! @file test_SHA256_power_5A.vhd
+--! @brief Iterated test case for SHA-256
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -5,10 +8,26 @@ use ieee.std_logic_1164.all;
 --! Arithmetic library, included for the unsigned type conversion
 use ieee.numeric_std.all;
 
+--! @test Repeated hashing of a sequence of messages using SHA-256
+--! \n NIST-provided test vectors: https://csrc.nist.gov/Projects/cryptographic-algorithm-validation-program/Secure-Hashing#shavs
+--! \n
+--! - <b>Input sequence 5A:</b> 
+--! 	-# x"9ebf93643854ea5c97a4f38f50bd18103fde2abdd77f5266b6914a317c07cc3cde954b85f6b8e207ddf68a267c678f4d9f7445d64bdff700"
+--! 	-# x"7da5f5153548eae21034efb7276e0a52d13c72df1ad2a2bf712dac87a140d04c034e4d1ef19777d27d360a05634abe5d3d541b12f6e08fa8"
+--! 	-# x"18537da0bf81cf55e38b8fbcfaa07ea36923c59e485cdc56656dab248c87efdf065de0f260d911b16e0e97ed8e6f6dc5313e17c098478600"
+--! 	-# x"cc29f1eb3b0237e815424c6c853ad0e16232768304f57009579127872d583093d92a7ba7f9f7cec6937f7262645c2d7e74437010ee87d0a8"
+--! 	-# x"294dee95f2146fc67870cd987d2e6e673ea320579b435d8d7870cc9f63900a487762ab6180927c0c608b0b33b18c6a31abfe2fce4805bf70"
+--! - <b>Expected output:</b>
+--!		-# x"47ee6110b83273f2b966bdcd34727007ef4d20edfec7e30b8931669c6d1c05e7"
+--!		-# x"9d6de887db0cd7a5ac51b0b4217ede80a3b83cb909824ebb0a90407e46906958"
+--!		-# x"56f10bcc16149f5d8bc86f4b9fe3eafbb5213ea1e4c209b0463c751c61650e04"
+--!		-# x"660cf7af3bce342d5ede084e3a6493747cf900583a5710f16e67bae8b5a95b74"
+--!		-# x"edee1c1d003835c8f39be8a489cf7e50b70ed96fbbc41b36ae7e5dc937c74a13"
+
 --! Test bench 5A for the SHA-256 hash core
 entity test_SHA256_power_5A is
 	generic (
-		FULLY_PIPELINED : boolean := false
+		FULLY_PIPELINED : boolean := false --! Whether the Uniy Under Test is a fully pipelined architecture
 	);
 end entity test_SHA256_power_5A;
 

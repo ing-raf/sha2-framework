@@ -1,3 +1,6 @@
+--! @file Transf_round_comb.vhd
+--! @brief Entity definition of the combinatorial part of the transformation round block
+
 --! Standard library 
 library ieee; 
 --! Standard 9-values logic library 
@@ -5,10 +8,10 @@ use ieee.std_logic_1164.all;
 --! Arithmetic library, included for the unsigned modulo addition  
 use ieee.numeric_std.all; 
 
---! Combinatorial part of the transformation round
+--! Combinatorial part of the transformation round block
 entity Transf_round_comb is
 	generic(
-		WORD_WIDTH : natural := 32;
+		WORD_WIDTH : natural := 32; --! Width of the words of the Compressor
 		UNROLLING_FACTOR : natural := 1 --! Number of SHA-256 steps performed by a single round
 	);
 	port(

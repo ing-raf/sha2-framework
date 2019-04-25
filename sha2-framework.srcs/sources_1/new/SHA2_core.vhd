@@ -1,9 +1,46 @@
+--! @mainpage A Flexible Framework for Exploring, Evaluating, and Comparing SHA-2 Designs
+--! @tableofcontents
+--! @section config Configuring the framework
+--! To configure the framework for employing a specific transformation round block:
+--! -# %Choose an implementation for the transformation round block \n 
+--! This is done by specifying an @c architecture for the @link Transf_round Compressor_pipeline_stage@endlink component.
+--!		<ul>
+--!		<li> If the @link Transf_round.Naive Naive@endlink architecture is chosen, it is necessary to specify also 
+--!			 an @c architecture for the Transf_round_comb component within the @link Transf_round.Naive Naive@endlink architecture.
+--! 	<li> If an architecture requiring system-level data prefetching is chosen (requiring @link SHA2_core.PREFETCH_ROUNDS PREFETCH_ROUNDS@endlink > 1),
+--!			it is necessary to specify also an @c architecture for the Initialisation_block component.
+--!		</ul>
+--! -# Configure the generic parameters of the top level entity \n
+--! The following parameters needs to be adjusted according to the requirements of the selected transformation round block:
+--!		<ul>
+--! 	<li> @link SHA2_core.PIPELINE_WORDS PIPELINE_WORDS@endlink: Number of words in the pipeline register
+--! 	<li> @link SHA2_core.PREFETCH_ROUNDS PREFETCH_ROUNDS@endlink: Number of prefetch steps
+--! 	<li> @link SHA2_core.FIX_TIME FIX_TIME@endlink: Whether is required to delay the Compressor pipeline
+--! 	<li> @link SHA2_core.UNROLLING_FACTOR UNROLLING_FACTORS@endlink: Unrolling factor (unless the transformation round block is itself generic on the unrolling factor) 
+--!		</ul>
+--! The following parameters are instead independent on the selected transformation round block:
+--! 	- @link SHA2_core.WIDTH WIDTH@endlink: Hash size
+--! 	- @link SHA2_core.PIPELINE_STAGES PIPELINE_STAGES@endlink: Number of pipeline stages
+--! 	- @link SHA2_core.FINAL_SUM_AS_STAGE FINAL_SUM_AS_STAGE@endlink: Whether or not to implement the chaining sum as a separate stage
+--! @section extend Add a different transformation round block
+--! A new transformation round block is added by defining an @c architecture for the @link Transf_round@endlink or the 
+--! @link Transf_round_comb@endlink entity. The latter can be used if the design focuses only on the combinatorial part.
+--! However, if the transformation round block needs to move the pipeline registers, as is the case when optimisations
+--! like <em>spatial reordering</em> or <em>variables precomputation</em>, an architecture for the @link Transf_round@endlink
+--! entity must be defined.
+--! @section architecture Architecture Details
+--! For more details on the implementation, @link SHA2_core.RTL see the architecture of the top level entity@endlink.
+
+--! @file SHA2_core.vhd 
+--! @brief Top level entity definition and implementation
+--! @details This file contains the definition of the top-level SHA-2 hash circuit and its implementation.
+--! @details Notably, this file contains the architectural parameters which needs to be changed in order to obtain a different
+--! SHA-2 circuit. More details are provided in @link SHA2_core.RTL the architecture description@endlink.
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
 use ieee.std_logic_1164.all;
-
---use ieee.numeric_std.all;
 
 --! Package containing some generalisation functions
 use work.utils.all;
@@ -61,7 +98,7 @@ end entity SHA2_core;
 --! needed for that stage. The pipeline depth can be configured by the generic parameter @link SHA2_core.PIPELINE_STAGES PIPELINE_STAGES@endlink,
 --! which disables pipelining if set to 1.
 --! @imageSize{sha2configurabledatapath.png,width:700px;}
---! @image html sha2configurabledatapath.png "Overall data path"
+--! @image html sha2configurabledatapath.png "Overall data path. Operative part in blue, Control part in red"
 --! @section clocking Pipeline clocking
 --! The pipeline registers are employed also as round registers, hence are clocked by the external base clock. 
 --! The two working modes are selected by a multiplexer placed in front of each pipeline register, which switches 
@@ -109,14 +146,14 @@ end entity SHA2_core;
 --! and only if the @link Transf_round.Naive.valid_reg valid@endlink flag is asserted in the output register.
 --! @details The @link Transf_round.Naive.valid_reg valid@endlink flag is initialised in the first stage by the 
 --! @link SHA2_core.start start@endlink primary input. To ensure the proper setting of the flag also for the very first
---! major cycle, this primary input is buffered with the same logic of the input message.a`
+--! major cycle, this primary input is buffered with the same logic of the input message.
 --! @section finalStage The final stage
 --! Differently from the other stages, the final sum stage requires only one clock cycle. This final sum can 
 --! optionally been performed in a separate stage. When this is the case, the output register of this stage, 
 --! which is also the output register for the whole circuit, is delayed of one clock cycle by means of a flip-flop.
 --! @details If there is at least one adder before the pipeline register in the Compressor pipeline stage, however, the
 --! separate stage is not profitable and can hence be disabled.
---! @section stagesCounter Supporting a Configurable Number of Stages
+--! @section stagesCounter Supporting a variable number of stages
 --! @details In order to be capable of supporting a configurable number of pipeline stages, a counter for pipeline stages
 --! is added. This counter is modulo @link SHA2_core.PIPELINE_STAGES PIPELINE_STAGES@endlink and is used by the 
 --! @link SHA2_Control_Unit Control Unit@endlink to determine when the pipeline has been fully flushed. The clock signal 
@@ -148,7 +185,6 @@ architecture RTL of SHA2_core is
 	--! @brief Type used to represent compressor pipeline connections
 	--! @details One pipeline input and one pipeline output is required per pipeline stage. The stages are
 	--! PIPELINE_STAGES + 1 due to the additional last stage which performs the final sum
-	--! @details 257 is the compressor pipeline registers width
 	type COMPRESSOR_PIPELINE_CONNECTION is array (PIPELINE_STAGES downto 0) of std_logic_vector(PIPELINE_WORDS * WORD_WIDTH downto 0);
 	--! Array of signals representing the inputs to each stage of the compressor pipeline
 	signal compressor_pipeline_input  : COMPRESSOR_PIPELINE_CONNECTION;
@@ -158,7 +194,6 @@ architecture RTL of SHA2_core is
 	signal output                     : std_logic_vector(WIDTH downto 0) := (others => '0');
 	--! @brief Type used to represent expander pipeline connections
 	--! @details One pipeline input and one pipeline output is required per pipeline stage.
-	--! @details 512 is the expander pipeline registers width
 	type EXPANDER_PIPELINE_CONNECTION is array (PIPELINE_STAGES - 1 downto 0) of std_logic_vector(2 * WIDTH - 1 downto 0);
 	--! Array of signals representing the inputs to each stage of the compressor pipeline
 	signal expander_pipeline_input    : EXPANDER_PIPELINE_CONNECTION;
@@ -200,8 +235,11 @@ architecture RTL of SHA2_core is
 	--! @details It is used to drive the synchronisation buffer for the @link SHA2_core.start start@endlink signal
 	signal ready_internal : std_logic := '0';
 
+	--! Validity flag for the Compressor pipeline
 	signal valid_in       : std_logic                                := '0';
+	--! Output of the message input buffer
 	signal buffered_input : std_logic_vector(2 * WIDTH - 1 downto 0) := (others => '0');
+	--! Message input to the Expander pipeline
 	signal M_in           : std_logic_vector(2 * WIDTH - 1 downto 0) := (others => '0');
 
 	--! Step counter value
@@ -219,6 +257,8 @@ begin
 		assert (PIPELINE_STAGES * UNROLLING_FACTOR * CYCLES_PER_STAGE = 80) report "The number of stages and the unrolling factor must exactly divide 80" severity failure;
 	end generate;
 
+	--! @brief Buffer for the start signal
+	--! @details It is required for capturing the start impulse only when the circuit is ready
 	buffer_start : entity components.D_ff
 		port map(
 			clk     => clk,
@@ -228,6 +268,9 @@ begin
 			q       => valid_in
 		);
 
+	--! @brief Message buffer
+	--! @details Required for synchronisation with the Expander pipeline when the @linkSHA2_control_Unit.Reordering Reordering@endlink 
+	--! Control Unit is instantiated
 	buffer_input : entity components.reg
 		generic map(
 			width => 2 * WIDTH

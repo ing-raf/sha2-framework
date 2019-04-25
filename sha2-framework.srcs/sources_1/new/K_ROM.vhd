@@ -1,3 +1,6 @@
+--! @file K_ROM.vhd
+--! @brief \f$K\f$ constants ROM entity definition and implementation
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -11,8 +14,7 @@ use ieee.numeric_std.all;
 use work.utils.all;
 
 --! @brief Constants ROM
---! @details All possible ROMs are hard-coded within the implementation of this entity. The
---! proper ROM is selected by the generic parameters
+--! @details The configuration parameters etermine the shape and content of the instantiated ROM
 entity K_ROM is
 	generic (
 		--! @brief Word width of the circuit
@@ -38,6 +40,9 @@ entity K_ROM is
 	);
 end entity K_ROM;
 
+--! @brief Architecture of the constants ROM
+--! @details Implements the synchronous behaviour of the ROM.
+--! @details The actual content of the ROM is configured with the function @link utils.rom_content rom_content@endlink
 architecture Behavioural of K_ROM is 
 	
 	--! @brief Type used to represent the content of the ROM

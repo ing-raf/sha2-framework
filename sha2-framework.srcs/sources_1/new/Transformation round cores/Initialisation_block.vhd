@@ -1,8 +1,17 @@
+--! @file Initialisation_block.vhd
+--! @brief Initialisation block entity definition
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
 use ieee.std_logic_1164.all;
 
+--! @brief Initialisation block for the Compressor pipeline
+--! @details This component provides additional initialisation values for the Compressor pipeline, apart from the
+--! initialisation values provided by the standard, if required by the transformation round block. 
+--! @details An @c architecture for this entity must be provided by implementations of the
+--! @link Transf_round transformation round block@endlink implementing system-level data prefetching, i.e.
+--! @link SHA2_core.PREFETCH_ROUNDS PREFETCH_ROUNDS @endlink greater than 0
 entity Initialisation_block is
 	generic(
 		WORD_WIDTH       : natural := 32; --! Width of the words of the Compressor

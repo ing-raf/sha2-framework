@@ -1,3 +1,6 @@
+--! @file Last_transformation.vhd
+--! @brief Chaining block entity and implementation
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library

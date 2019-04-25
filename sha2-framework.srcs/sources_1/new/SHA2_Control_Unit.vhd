@@ -1,3 +1,12 @@
+--! @file SHA2_Control_Unit.vhd
+--! @brief Control Unit entity definition and its implementations
+--! @details This file contains the entity definiton for the Control Unit, and two different implementations. The choose
+--! between the two is transparent to the user, instead is driven by the architectural parameters set in the 
+--! @link SHA2_core top level entity@endlink.
+--! @details Namely, the @link SHA2_Control_Unit.FSM FSM@endlink architecture is instantiated when the 
+--! @link SHA2_core.FIX_TIME FIX_TIME@endlink parameter is set to @c false, otherwise the 
+--! @link SHA2_Control_Unit.Reordering Reordering@endlink architecture is instantiated.
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -7,7 +16,7 @@ use ieee.std_logic_1164.all;
 --! @details It employs an external stage counter so as to be able to support a generic number
 --! of pipeline stages
 entity SHA2_Control_Unit is
-	generic (
+	generic(
 		CYCLES_PER_STAGE : natural := 1
 	);
 	port(
@@ -35,7 +44,7 @@ entity SHA2_Control_Unit is
 		expander_init     : out std_logic;
 		--! @brief Control signal asserted when the circuit can accept new inputs
 		--! @details This signal is used only in fully pipelined architectures. In other cases, it is always low
-		ready_cu : out std_logic
+		ready_cu          : out std_logic
 	);
 end entity SHA2_Control_Unit;
 
@@ -126,7 +135,7 @@ begin
 		count             <= '0';
 		count_stages      <= '0';
 		first_major_cycle <= '0';
-		ready_cu <= '0';
+		ready_cu          <= '0';
 
 		case current is
 			when reset =>
@@ -134,7 +143,7 @@ begin
 			when idle =>
 				first_major_cycle <= '1';
 				not_reset_count   <= '0';
-				ready_cu <= '1';
+				ready_cu          <= '1';
 			when first_load =>
 				first_major_cycle <= '1';
 				count             <= '1';
@@ -256,7 +265,7 @@ begin
 		count_stages      <= '0';
 		first_major_cycle <= '0';
 		expander_init     <= '0';
-		ready_cu <= '0';
+		ready_cu          <= '0';
 
 		case current is
 			when reset =>
@@ -265,7 +274,7 @@ begin
 				first_major_cycle <= '1';
 				expander_init     <= '1';
 				not_reset_count   <= '0';
-				ready_cu <= '1';
+				ready_cu          <= '1';
 			when first_load =>
 				first_major_cycle <= '1';
 				expander_init     <= '1';

@@ -1,3 +1,6 @@
+--! @file test_SHA256_power_1A.vhd
+--! @brief Iterated test case for SHA-256
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -5,10 +8,18 @@ use ieee.std_logic_1164.all;
 --! Arithmetic library, included for the unsigned type conversion
 use ieee.numeric_std.all;
 
+--! @test Repeated hashing of a sequence of messages using SHA-256
+--! \n NIST-provided test vectors: https://csrc.nist.gov/Projects/cryptographic-algorithm-validation-program/Secure-Hashing#shavs
+--! \n
+--! - <b>Input sequence 1A:</b> 
+--! 	-# x"11ae0cbfee7bb3df"
+--! - <b>Expected output:</b>
+--!		-# x"a46d5f010e9664f21378c7588924682338888b2680d9b34506010610066dab59"
+
 --! Test bench 1A for the SHA-256 hash core
 entity test_SHA256_power_1A is
 	generic (
-		FULLY_PIPELINED : boolean := true
+		FULLY_PIPELINED : boolean := true --! Whether the Uniy Under Test is a fully pipelined architecture
 	);
 end entity test_SHA256_power_1A;
 

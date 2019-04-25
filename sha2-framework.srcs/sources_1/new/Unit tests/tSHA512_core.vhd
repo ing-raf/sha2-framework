@@ -1,3 +1,6 @@
+--! @file tSHA512_core.vhd
+--! @brief Single-message test case for SHA-512
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -5,7 +8,13 @@ use ieee.std_logic_1164.all;
 --! Arithmetic library, included for the unsigned type conversion
 use ieee.numeric_std.all;
 
---! Test bench for the SHA-512 hash core
+--! @test Hash a single message using SHA-512
+--! \n This is the detailed one-block SHA-512 test case provided by NIST at
+--! @a https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+--! - <b>Input sequence:</b> "abc"
+--! - <b>Expected output:</b> x"ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+
+--! Single-message test bench for the SHA-512 hash core
 entity tSHA512_core is
 end entity tSHA512_core;
 

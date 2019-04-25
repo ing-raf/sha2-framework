@@ -1,8 +1,13 @@
+--! @file Transf_round.vhd
+--! @brief Transformation round entity definition
+
 --! Standard library 
 library ieee;
 --! Standard 9-values logic library 
 use ieee.std_logic_1164.all;
 
+--! @brief Transformation round block for the Compressor pipeline
+--! @details This component is responsible for performing the compression function within the Compressor pipeline
 entity Transf_round is
 	generic(
 		WORD_WIDTH : natural := 32; --! Width of the words of the Compressor

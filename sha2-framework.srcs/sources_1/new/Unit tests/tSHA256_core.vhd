@@ -1,3 +1,6 @@
+--! @file tSHA256_core.vhd
+--! @brief Single-message test case for SHA-256
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -5,7 +8,13 @@ use ieee.std_logic_1164.all;
 --! Arithmetic library, included for the unsigned type conversion
 use ieee.numeric_std.all;
 
---! Test bench for the SHA-256 hash core
+--! @test Hash a single message using SHA-256
+--! \n This is the detailed one-block SHA-256 test case provided by NIST at
+--! @a https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+--! - <b>Input sequence:</b> "abc"
+--! - <b>Expected output:</b> x"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+
+--! Single-message est bench for the SHA-256 hash core
 entity tSHA256_core is
 end entity tSHA256_core;
 

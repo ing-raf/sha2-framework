@@ -1,3 +1,6 @@
+--! @file ExpandeR_stage.vhd
+--! @brief Expander stage entity definition and implementation
+
 --! Standard library
 library ieee;
 --! Standard 9-values logic library
@@ -11,7 +14,7 @@ library components;
 --! Basic SHA components library
 library shacomps;
 
---! @brief %Stage of the Expander pipeline
+--! @brief Stage of the Expander pipeline
 entity Expander_stage is
 	generic(
 		WORD_WIDTH : natural := 32; --! Width of the words of the Expander 

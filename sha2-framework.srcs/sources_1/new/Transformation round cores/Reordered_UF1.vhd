@@ -1,3 +1,6 @@
+--! @file Reordered_UF1.vhd
+--! @brief Implementation of the transformation round block with spatial reordering
+
 --! Standard library 
 library ieee;
 --! Arithmetic library, included for the unsigned modulo addition  
@@ -9,6 +12,9 @@ library shacomps;
 --! Basic integrated circuits components library
 library components;
 
+--! @brief Spatially-reordered, non-unrolled architecture of the transformation round block
+--! @details Implementation of the architecture originally proposed in 
+--! <a href="http://ieeexplore.ieee.org/document/4633433/">H. Michail, A. Milidonis, A. Kakarountas, and C. Goutis, "Novel high throughput implementation of SHA-256 hash function through pre-computation technique", in ICECS 2005 - 12th IEEE International Conference on Electronics, Circuits, and Systems, 2005.</a> 
 architecture Reordered_UF1 of Transf_round is
 	
 	--! Internal output signal, to be used as feedback input

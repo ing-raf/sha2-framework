@@ -1,3 +1,6 @@
+--! @file Precomputed_UF1.vhd
+--! @brief Implementation of the transformation round block with precomputation
+
 --! Standard library 
 library ieee;
 --! Arithmetic library, included for the unsigned modulo addition  
@@ -9,10 +12,14 @@ library shacomps;
 --! Basic integrated circuits components library
 library components;
 
---!@brief Precomputed, non-unrolled architecture
+--! @brief Precomputed, non-unrolled architecture of the transformation round block
+--! @details Implementation of the architecture originally proposed in 
+--! <a href="http://dx.doi.org/10.1016/j.micpro.2012.06.007">I. Algredo-Badillo, C. Feregrino-Uribe, R. Cumplido, and M. Morales-Sandoval, "FPGA-based implementation alternatives for the inner loop of the Secure Hash Algorithm SHA-256", Microprocess. Microsyst., vol. 37, no. 6-7, pp. 750-757, 2013.</a> 
 architecture Precomputed_UF1 of Transf_round is
 	
+	--! Input value of the accumulator \f$D\f$
 	alias d_in is input(5 * WORD_WIDTH - 1 downto 4 * WORD_WIDTH);
+	--! Input value of the accumulator \f$H\f$
 	alias h_in is input(WORD_WIDTH - 1 downto 0);
 	
 	--! Output of the multiplexer, and input of the compressor pipeline register
@@ -40,20 +47,35 @@ architecture Precomputed_UF1 of Transf_round is
 	alias f_t is reg_output(3 * WORD_WIDTH - 1 downto 2 * WORD_WIDTH);
 	--! Value of the accumulator \f$G\f$ input to the compressor round
 	alias g_t is reg_output(2 * WORD_WIDTH - 1 downto WORD_WIDTH);
-	--! Value of the accumulator \f$H\f$ input to the compressor round
-	--!@details This value is precomputed during the precomputation step, hence it is not read
+	--! @brief Value of the accumulator \f$H\f$ input to the compressor round
+	--! @details This value is precomputed during the precomputation step, hence it is not read
 	--! from the registers
 	signal h_t : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
 	
+	
+	--! Output of the \f$Maj\f$ function block
 	signal Maj_o: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); 
+	--! Output of the \f$Ch\f$ function block
 	signal Ch_o : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! Output of the \f$\Sigma_0\f$ function block
 	signal Sigma_0_o : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! Output of the \f$\Sigma_1\f$ function block
 	signal Sigma_1_o : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! @brief Output of the \f$\delta\f$ function
+	--! @details This signal is input to the precompuation register
 	signal delta_reg_in : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! @brief Precomputed value of the \f$\delta\f$ function
+	--! @details This signal is output from the precompuation register
 	signal delta_reg_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! @brief Precomputed value of the \f$\delta'\f$ function	
+	--! @details This signal is input to the precompuation register
 	signal delta_first_reg_in : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! @brief Precomputed value of the \f$\delta'\f$ function
+	--! @details This signal is output from the precompuation register
 	signal delta_first_reg_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! Output of the addition of \f$Ch\f$ and \f$\Sigma_1\f$
 	signal intermediate_sum2 :  std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+	--! Output of the Carry-Save Adder on the path for computing \f$A\f$
 	signal intermediate_sum3 :  std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
 
 	--! @brief Value of the accumulator \f$A\f$ output from the compressor round
@@ -131,7 +153,8 @@ begin
 	with end_major_cycle select h_t <=
 		g_t when '0',
 		h_in when '1', (others => 'X') when others;
-		
+	
+	--! Adder for computing the \f$\delta\f$ function	
 	delta : entity components.CS_adder
 		generic map(
 			width => WORD_WIDTH
@@ -141,12 +164,13 @@ begin
 			y     => K,
 			z     => h_t,
 			c_in  => '0',
-			s     => delta_reG_in,
+			s     => delta_reg_in,
 			c_out => open
 		);
 	
 	delta_first_reg_in <= std_logic_vector(unsigned(delta_reg_in) + unsigned(d_t));
 	
+	--! Precomputation register for the \f$\delta\f$ value
 	delta_reg : entity components.reg
 		generic map(
 			width => WORD_WIDTH
@@ -158,7 +182,8 @@ begin
 			d       => delta_reg_in,
 			q       => delta_reg_out
 		);
-		
+	
+	--! Precomputation register for the \f$\delta'\f$ value	
 	delta_first_reg : entity components.reg
 		generic map(
 			width => WORD_WIDTH
@@ -171,6 +196,7 @@ begin
 			q       => delta_first_reg_out
 		);
 	
+	--! \f$Maj\f$ function block
 	maj : entity shacomps.Majority
 		generic map(
 			width => WORD_WIDTH
@@ -182,6 +208,7 @@ begin
 			o => Maj_o
 		);
 		
+	--! \f$\Sigma_0\f$ function block
 	sigma0 : entity shacomps.Sigma_0
 		generic map(
 			WORD_WIDTH => WORD_WIDTH
@@ -191,6 +218,7 @@ begin
 			o => Sigma_0_o
 		);
 		
+	--! \f$Ch\f$ function block
 	ch : entity shacomps.Choose
 		generic map(
 			width => WORD_WIDTH
@@ -201,7 +229,8 @@ begin
 			z => g_t,
 			o => Ch_o
 		);
-		
+	
+	--! \f$\Sigma_1\f$ function block	
 	sigma1 : entity shacomps.Sigma_1
 		generic map(
 			WORD_WIDTH => WORD_WIDTH
@@ -210,7 +239,8 @@ begin
 			x => e_t,
 			o => Sigma_1_o
 		);
-		
+	
+	--! Carry-Save Adder on the path for computing \f$A\f$	
 	intermediate_csa : entity components.CS_adder
 		generic map(
 			width => WORD_WIDTH

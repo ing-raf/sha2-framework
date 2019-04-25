@@ -1,9 +1,20 @@
+--! @file "Transformation round cores/Naive.vhd"
+--! @brief Implementation of the transformation round block without any optimisation
+
 --! Basic SHA components library
 library shacomps;
 
 --! Basic integrated circuits components library
 library components;
 
+--! @brief Straightforward implementation of the transformation round
+--! @details In this implementation, the pipeline register is placed before all the combinatorial part, 
+--! which is packed within the Transf_round_comb component.
+--! @imageSize{naive_transf_round.png,width:700px;}
+--! @image html naive_transf_round.png "Straightforward architecture of the transformation round"
+--! @details Designs focused only on the combinatorial part can be implemented as an @c architecture for the
+--! Transf_round_comb component and exploit this @c architecture for the Transf_round. Such implementations
+--! require @link SHA2_core.FIX_TIME FIX_TIME@endlink set to @c false.
 architecture Naive of Transf_round is
 
 	--! Output of the multiplexer, and input of the compressor pipeline register
@@ -76,9 +87,10 @@ architecture Naive of Transf_round is
 	--! Value of the accumulator \f$H\f$ output from the stage
 	alias h_out is output(WORD_WIDTH - 1 downto 0);
 
+	--! Combinatorial part of the transformation round
 	component Transf_round_comb is
 		generic(
-			WORD_WIDTH : natural := 32;
+			WORD_WIDTH : natural := 32; --! Width of the words of the Compressor
 			UNROLLING_FACTOR : natural := 1 --! Number of SHA-256 steps performed by a single round
 		);
 		port(
@@ -146,6 +158,7 @@ begin
 			q       => reg_output
 		);
 
+	--! Compression function
 	compression : component Transf_round_comb
 		generic map(
 			WORD_WIDTH => WORD_WIDTH,

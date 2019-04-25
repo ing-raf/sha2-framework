@@ -1,3 +1,6 @@
+--! @file Reordered_UF2.vhd
+--! @brief Implementation of the transformation round block with spatial reordering and unrolling
+
 --! Standard library 
 library ieee;
 --! Arithmetic library, included for the unsigned modulo addition  
@@ -9,6 +12,9 @@ library shacomps;
 --! Basic integrated circuits components library
 library components;
 
+--! @brief Spatially-reordered, 2-unrolled architecture of the transformation round block
+--! @details Implementation of the architecture originally proposed in 
+--! <a href="http://doi.acm.org/10.1145/2133352.2133354">H. E. Michail, G. S. Athanasiou, V. Kelefouras, G. Theodoridis, and C. E. Goutis,"On the Exploitation of a High-Throughput SHA-256 FPGA Design for HMAC", ACM Trans. Reconfigurable Technol. Syst., vol. 5, no. 1, p. 2:1--2:28, 2012.</a> 
 architecture Reordered_UF2 of Transf_round is
 	--! Internal output signal, to be used as feedback input
 	signal feedback   : std_logic_vector(14*WORD_WIDTH downto 0) := (others => '0');
@@ -488,6 +494,8 @@ library ieee;
 --! Arithmetic library, included for the unsigned modulo addition  
 use ieee.numeric_std.all;
 
+--! @brief Initialisation block for the @link Transf_round.Reordered_UF2 Reordered_UF2@endlink architecture of the 
+--! @link Transf_round transformation round block@endlink.
 architecture Reordered_UF2 of Initialisation_block is
 	--! Initialisation value for the accumulator \f$B\f$
 	alias b_iv is iv(7*WORD_WIDTH - 1 downto 6*WORD_WIDTH);

@@ -1,7 +1,10 @@
+--! @file Unrolled.vhd
+--! @brief Implementation of the combinatorial part of the transformation round block with unrolling
+
 --! Basic SHA components library
 library shacomps;
 
---! @brief Architecture of the combinatorial part of the transformation round
+--! @brief %Unrolled architecture of the combinatorial part of the transformation round
 --! @details This architecture performs 4 steps within a single clock cycle.
 --! @details To perform the unrolling, start from a single step, which is given by:
 --! \f{align*}

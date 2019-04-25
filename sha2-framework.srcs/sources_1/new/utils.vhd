@@ -1,20 +1,40 @@
+--! @file utils.vhd
+--! @brief Utility package definition and implementation
+
+--! Standard library
 library ieee;
+--! Standard 9-values logic library
 use ieee.std_logic_1164.all;
---! Standard math library, required for the log function
+--! Standard math library, required for the @c log2 function
 use ieee.math_real.all;
 
+--! @brief Package containing some utility functions, required for generalisation
 package utils is
-	type CONFIGURABLE_ROM is array(natural range <>) of std_logic_vector;
 
+	--! @brief Two-dimensional matrix type, for ROM content
+	--! @details The ROM shape cannot be statically determined, on the other hand it must be computed according to the
+	--! configuration parameters.
+	--! @warning This definition, relying on a VHDL-2008 feature, makes the SHA-2 Workbench unsupported for simulation
+	--! by Xilinx Vivado, due to the lack of support for its ISim simulator
+	type CONFIGURABLE_ROM is array(natural range <>) of std_logic_vector;
+	
+	--! @brief Function for computing the number of cycles for each pipeline stage
+	--! @details The number of cycles for each pipeline stages is a constant depending on the configuration parameters
 	function cycles_per_stage (width : natural; stages : natural; uf : natural) return natural;
-	--! @details To be compatible with Xilinx ISim, it is appropriate to return -1 if the argument of the log2 function equals 0
+	--! @grief Utility function to determine how many bits are required to encode the provided argument
+	--! @details This function is used to determine the width of the counting value signals
 	function bits_to_encode(x : natural) return integer;
+	--! @brief Function to determine the content of the ROM of the \f$K\f$ constants
+	--! @details The content of each ROM depends on the architectural patameters as well as on the pipeline stage
+	--! of the specific ROM
 	function rom_content (word : natural; cps: natural; uf : natural; stage : natural; pf : natural := 0) return CONFIGURABLE_ROM;
 			
 end package utils;
 
+--! @brief Impleemntation of the utility functions
 package body utils is
 
+	--! @brief Function for computing the number of cycles for each pipeline stage
 	function cycles_per_stage (width : natural; stages : natural; uf : natural) return natural is
 	begin
 		if (width = 256) then
@@ -24,6 +44,8 @@ package body utils is
 		end if;
 	end function;
 	
+	--! @grief Utility function to determine how many bits are required to encode the provided argument.
+	--! @details To be compatible with Xilinx ISim, it is appropriate to return -1 if the argument of the log2 function equals 0.
 	function bits_to_encode(x : natural) return integer is
 	begin
 		if (x = 1) then
@@ -33,7 +55,7 @@ package body utils is
 		end if;
 	end function;
 		
-	
+	--! @brief Function to determine the content of the ROM of the \f$K\f$ constants
 	function rom_content (word : natural; cps: natural; uf : natural; stage : natural; pf : natural := 0) return CONFIGURABLE_ROM is
 		constant ROM_CONTENT : CONFIGURABLE_ROM(79 downto 0)(63 downto 0) := (
 			x"6c44198c4a475817", x"5fcb6fab3ad6faec", x"597f299cfc657e2a", x"4cc5d4becb3e42b6", x"431d67c49c100d4c", x"3c9ebe0a15c9bebc", x"32caab7b40c72493", x"28db77f523047d84",
